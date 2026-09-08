@@ -12,6 +12,7 @@
 - [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Arquitetura do Sistema](#arquitetura-do-sistema)
 - [Modelo de Dados & Entidades](#modelo-de-dados-entidades)
+- [Banco de Dados](#banco-de-dados)
 - [Regras de Negócio & Validações](#regras-de-negocio-validacoes)
 - [Fluxo Principal de Atendimento](#fluxo-principal-de-atendimento)
 - [Guia de Identidade Visual (UI)](#guia-de-identidade-visual-ui)
@@ -118,10 +119,102 @@ O sistema adota uma arquitetura em camadas simples, promovendo a separação ent
 - **Pet → Atendimento:** $1 : 0..*$ *(Um pet pode passar por múltiplos atendimentos)*
 - **Veterinário → Atendimento:** $1 : 0..*$ *(Um veterinário pode realizar múltiplos atendimentos)*
 - **Pet → Vacina:** $1 : 0..*$ *(Um pet pode ter vários registros de vacina)*
-
+  
 ### Diagrama de Classes
 
 ![Diagrama de Classes](imagens/mermaid-diagram-2026-09-02-182657.png)
+
+---
+
+<a id="banco-de-dados"></a>
+### Banco de Dados
+
+<code>
+CREATE DATABASE IF NOT EXISTS veterinaria;
+USE veterinaria;
+
+-- 1. Tabela TUTOR
+CREATE TABLE IF NOT EXISTS tutor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(14) UNIQUE NOT NULL,
+    telefone VARCHAR(20),
+    email VARCHAR(100),
+    endereco VARCHAR(200)
+);
+
+-- 2. Tabela PET
+CREATE TABLE IF NOT EXISTS pet (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tutor_id INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    especie VARCHAR(50) NOT NULL,
+    raca VARCHAR(50),
+    sexo CHAR(1),
+    data_nascimento DATE,
+    peso DECIMAL,
+    FOREIGN KEY (tutor_id) REFERENCES tutor(id) ON DELETE CASCADE
+);
+
+-- 3. Tabela VETERINARIO
+CREATE TABLE IF NOT EXISTS veterinario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    crmv VARCHAR(20) UNIQUE NOT NULL,
+    telefone VARCHAR(20),
+    especialidade VARCHAR(100)
+);
+
+-- 4. Tabela ATENDIMENTO
+CREATE TABLE IF NOT EXISTS atendimento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pet_id INT NOT NULL,
+    veterinario_id INT NOT NULL,
+    data_atendimento DATE NOT NULL,
+    hora_atendimento TIME NOT NULL,
+    descricao TEXT,
+    diagnostico TEXT,
+    valor DECIMAL NOT NULL DEFAULT 0.0,
+    FOREIGN KEY (pet_id) REFERENCES pet(id),
+    FOREIGN KEY (veterinario_id) REFERENCES veterinario(id)
+);
+
+-- 5. Tabela PROCEDIMENTO
+CREATE TABLE IF NOT EXISTS procedimento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    valor DECIMAL NOT NULL DEFAULT 0.0
+);
+
+-- 6. Tabela EXAME
+CREATE TABLE IF NOT EXISTS exame (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    valor DECIMAL NOT NULL DEFAULT 0.0
+);
+
+-- 7. Tabela VACINA
+CREATE TABLE IF NOT EXISTS vacina (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pet_id INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    data_aplicacao DATE NOT NULL,
+    proxima_dose DATE,
+    FOREIGN KEY (pet_id) REFERENCES pet(id) ON DELETE CASCADE
+);
+
+SELECT * FROM atendimento;
+SELECT * FROM exame;
+SELECT * FROM pet;
+SELECT * FROM procedimento;
+SELECT * FROM tutor;
+SELECT * FROM vacina;
+SELECT * FROM veterinario;
+</code>
+
+---
 
 <a id="regras-de-negocio-validacoes"></a>
 ## Regras de Negócio & Validações
