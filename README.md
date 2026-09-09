@@ -1,4 +1,4 @@
-# 🐾 Home for Furry Friends — Sistema Veterinário
+# Home for Furry Friends — Sistema Veterinário
 
 > **Sistema Desktop de Gerenciamento Veterinário**  
 > Projeto prático de desenvolvimento para centralização e controle de atendimentos, tutores, pets, vacinas e procedimentos clínicos.
@@ -129,7 +129,7 @@ O sistema adota uma arquitetura em camadas simples, promovendo a separação ent
 <a id="banco-de-dados"></a>
 ### Banco de Dados
 
-<code>
+```text
 CREATE DATABASE IF NOT EXISTS veterinaria;
 USE veterinaria;
 
@@ -212,7 +212,7 @@ SELECT * FROM procedimento;
 SELECT * FROM tutor;
 SELECT * FROM vacina;
 SELECT * FROM veterinario;
-</code>
+```
 
 ---
 
