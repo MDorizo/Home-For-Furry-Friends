@@ -14,142 +14,243 @@ import java.sql.Date;
 import java.sql.Time;
 
 public class TelaAtendimento extends JFrame {
+
+    private JTextField txtId, txtDescricao, txtDiagnostico, txtValor;
     private JComboBox<Pet> cbPets;
     private JComboBox<Veterinario> cbVets;
-    private JTextArea txtDescricao, txtDiagnostico;
-    private JTextField txtValor;
     private JTable tabela;
     private DefaultTableModel tableModel;
 
-    private AtendimentoDAO atendimentoDAO;
-    private PetDAO petDAO;
-    private VeterinarioDAO vetDAO;
+    private AtendimentoDAO atendimentoDAO = new AtendimentoDAO();
+    private PetDAO petDAO = new PetDAO();
+    private VeterinarioDAO veterinarioDAO = new VeterinarioDAO();
 
     public TelaAtendimento() {
-        atendimentoDAO = new AtendimentoDAO();
-        petDAO = new PetDAO();
-        vetDAO = new VeterinarioDAO();
-
-        setTitle("Home for Furry Friends - Registro de Atendimento Clínico");
-        setSize(900, 600);
+        setTitle("Home for Furry Friends - Cadastro de Atendimentos");
+        setSize(850, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
 
         // Header
-        JPanel painelHeader = new JPanel();
-        painelHeader.setBackground(Color.decode("#2E7D6B"));
-        JLabel lblTitulo = new JLabel("Home for Furry Friends - Atendimento Clínico");
-        lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        painelHeader.add(lblTitulo);
-        add(painelHeader, BorderLayout.NORTH);
+        JPanel header = new JPanel();
+        header.setBackground(Color.decode("#2E7D6B"));
+
+        JLabel titulo = new JLabel("Home for Furry Friends - Cadastro de Atendimentos");
+        titulo.setForeground(Color.WHITE);
+        titulo.setFont(new Font("Arial", Font.BOLD, 18));
+
+        header.add(titulo);
+        add(header, BorderLayout.NORTH);
 
         // Formulário
-        JPanel painelForm = new JPanel(new GridLayout(5, 2, 5, 5));
-        painelForm.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        JPanel form = new JPanel(new GridLayout(6, 2, 5, 5));
+        form.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        painelForm.add(new JLabel("Selecione o Pet*:"));
+        form.add(new JLabel("ID:"));
+        txtId = new JTextField();
+        txtId.setEditable(false);
+        form.add(txtId);
+
+        form.add(new JLabel("Pet*:"));
         cbPets = new JComboBox<>();
-        carregarPets(); // Preenche o JComboBox com todos os pets cadastrados
-        painelForm.add(cbPets);
+        carregarPets();
+        form.add(cbPets);
 
-        painelForm.add(new JLabel("Selecione o Veterinário*:"));
+        form.add(new JLabel("Veterinário*:"));
         cbVets = new JComboBox<>();
-        carregarVets(); // Preenche o JComboBox com todos os veterinários cadastrados
-        painelForm.add(cbVets);
+        carregarVeterinarios();
+        form.add(cbVets);
 
-        painelForm.add(new JLabel("Descrição da Consulta:"));
-        txtDescricao = new JTextArea(2, 20);
-        painelForm.add(new JScrollPane(txtDescricao));
+        form.add(new JLabel("Descrição:"));
+        txtDescricao = new JTextField();
+        form.add(txtDescricao);
 
-        painelForm.add(new JLabel("Diagnóstico / Procedimentos:"));
-        txtDiagnostico = new JTextArea(2, 20);
-        painelForm.add(new JScrollPane(txtDiagnostico));
+        form.add(new JLabel("Diagnóstico / Procedimentos:"));
+        txtDiagnostico = new JTextField();
+        form.add(txtDiagnostico);
 
-        painelForm.add(new JLabel("Valor Total (R$)*:"));
-        txtValor = new JTextField("0.00");
-        painelForm.add(txtValor);
+        form.add(new JLabel("Valor (R$)*:"));
+        txtValor = new JTextField();
+        form.add(txtValor);
 
-        // Botão de finalizar atendimento
-        JButton btnFinalizar = new JButton("Finalizar Atendimento");
-        btnFinalizar.setBackground(Color.decode("#43A047"));
-        btnFinalizar.setForeground(Color.WHITE);
-        btnFinalizar.setFont(new Font("Arial", Font.BOLD, 14));
+        // Botões
+        JPanel botoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-        JPanel painelCentral = new JPanel(new BorderLayout());
-        painelCentral.add(painelForm, BorderLayout.CENTER);
-        painelCentral.add(btnFinalizar, BorderLayout.SOUTH);
+        JButton btnSalvar = new JButton("Salvar");
+        btnSalvar.setBackground(Color.decode("#43A047"));
+        btnSalvar.setForeground(Color.WHITE);
 
-        add(painelCentral, BorderLayout.WEST);
+        JButton btnAtualizar = new JButton("Atualizar");
+        btnAtualizar.setBackground(Color.decode("#5BB8C5"));
+        btnAtualizar.setForeground(Color.WHITE);
 
-        // Tabela que lista todos os atendimentos já registrados no sistema.
-        tableModel = new DefaultTableModel(new Object[]{"ID", "Pet ID", "Vet ID", "Data", "Diagnóstico", "Valor (R$)"}, 0);
+        JButton btnExcluir = new JButton("Excluir");
+        btnExcluir.setBackground(Color.decode("#D9534F"));
+        btnExcluir.setForeground(Color.WHITE);
+
+        JButton btnLimpar = new JButton("Limpar");
+
+        botoes.add(btnSalvar);
+        botoes.add(btnAtualizar);
+        botoes.add(btnExcluir);
+        botoes.add(btnLimpar);
+
+        JPanel esquerda = new JPanel(new BorderLayout());
+        esquerda.add(form, BorderLayout.NORTH);
+        esquerda.add(botoes, BorderLayout.SOUTH);
+
+        add(esquerda, BorderLayout.WEST);
+
+        // Tabela
+        tableModel = new DefaultTableModel(
+                new Object[]{"ID", "Pet ID", "Vet ID", "Data", "Diagnóstico", "Valor"}, 0
+        );
+
         tabela = new JTable(tableModel);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
-        btnFinalizar.addActionListener(e -> registrarAtendimento());
+        // Eventos
+        btnSalvar.addActionListener(e -> salvarAtendimento());
+        btnAtualizar.addActionListener(e -> atualizarAtendimento());
+        btnExcluir.addActionListener(e -> excluirAtendimento());
+        btnLimpar.addActionListener(e -> limparCampos());
+
+        tabela.getSelectionModel().addListSelectionListener(e -> selecionarLinha());
 
         carregarTabela();
     }
 
-    // Busca todos os pets no banco de dados e preenche o campo de seleção de pets.
     private void carregarPets() {
         cbPets.removeAllItems();
-        for (Pet p : petDAO.listarTodos()) {
-            cbPets.addItem(p);
-        }
+        for (Pet p : petDAO.listarTodos()) cbPets.addItem(p);
     }
 
-    // Busca todos os veterinários no banco de dados e preenche o campo de seleção de veterinários.
-    private void carregarVets() {
+    private void carregarVeterinarios() {
         cbVets.removeAllItems();
-        for (Veterinario v : vetDAO.listarTodos()) {
-            cbVets.addItem(v);
-        }
+        for (Veterinario v : veterinarioDAO.listarTodos()) cbVets.addItem(v);
     }
 
-    // Busca todos os atendimentos já registrados no banco de dados e preenche a tabela.
     private void carregarTabela() {
         tableModel.setRowCount(0);
+
         for (Atendimento a : atendimentoDAO.listarTodos()) {
-            tableModel.addRow(new Object[]{a.getId(), a.getPetId(), a.getVeterinarioId(), a.getDataAtendimento(), a.getDiagnostico(), a.getValor()});
+            tableModel.addRow(new Object[]{
+                    a.getId(), a.getPetId(), a.getVeterinarioId(),
+                    a.getDataAtendimento(), a.getDiagnostico(), a.getValor()
+            });
         }
     }
 
-    // Registra um novo atendimento com os dados colocados no formulário.
-    private void registrarAtendimento() {
-        // Descobre qual pet e qual veterinário foram escolhidos nos dois JComboBox.
+    private void selecionarLinha() {
+        int linha = tabela.getSelectedRow();
+        if (linha == -1) return;
+
+        int id = Integer.parseInt(tableModel.getValueAt(linha, 0).toString());
+        int petId = Integer.parseInt(tableModel.getValueAt(linha, 1).toString());
+        int vetId = Integer.parseInt(tableModel.getValueAt(linha, 2).toString());
+
+        txtId.setText(String.valueOf(id));
+
+        for (int i = 0; i < cbPets.getItemCount(); i++)
+            if (cbPets.getItemAt(i).getId() == petId) cbPets.setSelectedIndex(i);
+
+        for (int i = 0; i < cbVets.getItemCount(); i++)
+            if (cbVets.getItemAt(i).getId() == vetId) cbVets.setSelectedIndex(i);
+
+        for (Atendimento a : atendimentoDAO.listarTodos()) {
+            if (a.getId() == id) {
+                txtDescricao.setText(a.getDescricao() == null ? "" : a.getDescricao());
+                txtDiagnostico.setText(a.getDiagnostico() == null ? "" : a.getDiagnostico());
+                txtValor.setText(String.valueOf(a.getValor()));
+                break;
+            }
+        }
+    }
+
+    private void salvarAtendimento() {
         Pet pet = (Pet) cbPets.getSelectedItem();
         Veterinario vet = (Veterinario) cbVets.getSelectedItem();
 
-        if (pet == null || vet == null || txtValor.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Selecione o Pet, o Veterinário e informe o Valor!");
+        if (pet == null || vet == null || txtValor.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Preencha os campos obrigatórios!");
             return;
         }
 
         try {
-            double valor = Double.parseDouble(txtValor.getText());
-
-            // A data e a hora do atendimento não são digitadas pelo usuário,
-            // nós pegamos o tempo exato de agora (System.currentTimeMillis(),
-            // que devolve a data/hora atual do computador) no momento em que
-            // o botão "Finalizar Atendimento" é clicado.
-            Date dataAtual = new Date(System.currentTimeMillis());
-            Time horaAtual = new Time(System.currentTimeMillis());
-
-            Atendimento a = new Atendimento(pet.getId(), vet.getId(), dataAtual, horaAtual, txtDescricao.getText(), txtDiagnostico.getText(), valor);
+            Atendimento a = new Atendimento(
+                    pet.getId(), vet.getId(),
+                    new Date(System.currentTimeMillis()),
+                    new Time(System.currentTimeMillis()),
+                    txtDescricao.getText(), txtDiagnostico.getText(),
+                    Double.parseDouble(txtValor.getText())
+            );
 
             if (atendimentoDAO.registrar(a)) {
-                JOptionPane.showMessageDialog(this, "Atendimento finalizado com sucesso!");
-                txtDescricao.setText("");
-                txtDiagnostico.setText("");
-                txtValor.setText("0.00");
+                JOptionPane.showMessageDialog(this, "Atendimento cadastrado com sucesso!");
+                limparCampos();
                 carregarTabela();
             }
-        } catch (NumberFormatException e) {
-            // Essa parte é usada se o usuário digitar algo que não seja um número válido no campo Valor.
-            JOptionPane.showMessageDialog(this, "Informe um valor numérico válido!");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Informe um valor válido!");
         }
+    }
+
+    private void atualizarAtendimento() {
+        if (txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selecione um atendimento para atualizar!");
+            return;
+        }
+
+        Pet pet = (Pet) cbPets.getSelectedItem();
+        Veterinario vet = (Veterinario) cbVets.getSelectedItem();
+
+        try {
+            Atendimento a = new Atendimento(
+                    Integer.parseInt(txtId.getText()),
+                    pet.getId(), vet.getId(), null, null,
+                    txtDescricao.getText(), txtDiagnostico.getText(),
+                    Double.parseDouble(txtValor.getText())
+            );
+
+            if (atendimentoDAO.atualizar(a)) {
+                JOptionPane.showMessageDialog(this, "Atendimento atualizado com sucesso!");
+                limparCampos();
+                carregarTabela();
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Verifique os dados informados!");
+        }
+    }
+
+    private void excluirAtendimento() {
+        if (txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selecione um atendimento para excluir!");
+            return;
+        }
+
+        int resposta = JOptionPane.showConfirmDialog(
+                this, "Deseja realmente excluir este atendimento?",
+                "Confirmar exclusão", JOptionPane.YES_NO_OPTION
+        );
+
+        if (resposta == JOptionPane.YES_OPTION &&
+                atendimentoDAO.excluir(Integer.parseInt(txtId.getText()))) {
+
+            JOptionPane.showMessageDialog(this, "Atendimento excluído!");
+            limparCampos();
+            carregarTabela();
+        }
+    }
+
+    private void limparCampos() {
+        txtId.setText("");
+        txtDescricao.setText("");
+        txtDiagnostico.setText("");
+        txtValor.setText("");
+        tabela.clearSelection();
+
+        if (cbPets.getItemCount() > 0) cbPets.setSelectedIndex(0);
+        if (cbVets.getItemCount() > 0) cbVets.setSelectedIndex(0);
     }
 }
