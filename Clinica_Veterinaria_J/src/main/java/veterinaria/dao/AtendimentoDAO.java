@@ -54,4 +54,37 @@ public class AtendimentoDAO {
         }
         return atendimentos;
     }
+
+    // UPDATE - atualiza um atendimento existente
+            public boolean atualizar(Atendimento atendimento){
+                String sql = "UPDATE atendimento SET pet_id = ?, veterinario_id = ?, descricao = ?, diagnostico = ?, valor = ?,  WHERE id = ?";
+                try (Connection conn = Conexao.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, atendimento.getPetId());
+            stmt.setInt(2, atendimento.getVeterinarioId());
+            stmt.setString(3, atendimento.getDescricao());
+            stmt.setString(4, atendimento.getDiagnostico());
+            stmt.setDouble(5, atendimento.getValor());
+            stmt.setInt(6, atendimento.getId()); // define qual atendimento (WHERE id = ?) deve ser atualizado
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+            }
+
+    // DELETE - exclui um atendimento existente.
+    public boolean excluir(int id) {
+        String sql = "DELETE FROM atendimento WHERE id = ?";
+        try (Connection conn = Conexao.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
